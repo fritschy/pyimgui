@@ -2963,6 +2963,51 @@ def color_edit4(
     ), (inout_color[0], inout_color[1], inout_color[2], inout_color[3])
 
 
+def plot_lines(str label, list items, int values_offset=0, str overlay_text="", scale_min=0.001, scale_max=1000.0, width=320, height=180, stride=1):
+    """Plot an array. (Makes a temporary copy...)
+
+    .. visual-example::
+        :auto_layout:
+        :height: 200
+        :width: 200
+        :click: 80 40
+
+        imgui.begin("Example: custom listbox")
+
+        data = list(range(10))
+        imgui.plot_lines("some numbers", data)
+
+        imgui.end()
+
+    Args:
+        label (str): The label.
+        items (list of float): data points to plot.
+        values_offset (int): offset of values in array. (optional, default 0)
+        overlay_text (str): overlay text for plot. (optional, default "")
+        scale_min (float): minimum scale of data values. (optional, default 0.001)
+        scale_max (float): maximum scale of data values. (optional, default 1000)
+        width (float): graph width. (optional, default 320)
+        height (float): graph height. (optional, default 180)
+        stride (int): stride of data elements. (optional, default 1)
+
+    Returns:
+        None
+
+    .. wraps::
+        void PlotLines(
+                const char* label, const float* values, int values_count,
+                # note: optional
+                int values_offset, const char* overlay_text,
+                float scale_min, float scale_max, ImVec2 graph_size, int stride
+        )
+    """
+    cdef float *in_items = <float*> malloc((len(items) // stride - values_offset) * sizeof(float))
+    for jndex, index in zip(range(len(items) // stride - values_offset), range(values_offset, len(items), stride)):
+        in_items[jndex] = items[index]
+    cimgui.PlotLines(_bytes(label), in_items, len(items), 0, _bytes(overlay_text), 0.001, 100.0, _cast_args_ImVec2(width, height), sizeof(float))
+    free(in_items)
+
+
 def drag_float(
     str label, float value,
     float change_speed = 1.0,
